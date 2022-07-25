@@ -55,6 +55,7 @@ const upsertUser = (username, password, userDetail) => {
 }
 
 // express middleware for validating `user` cookie against users store
+// cookieAuth will be used to check for signed cookies on requests that indicate that a user has already authenticated.
 const cookieAuth = (req, res, next) => {
     if(!req.signedCookies.user || !users[req.signedCookies.user]) {
         res.sendStatus(401);

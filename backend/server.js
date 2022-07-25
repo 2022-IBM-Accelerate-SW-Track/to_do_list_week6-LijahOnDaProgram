@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 //add new item to json file
 app.post("/items", addItem)
 
+
 function addItem(request, response) {
     // Converting Javascript object (Task Item) to a JSON string
     let id = request.body.jsonObject.id
@@ -62,7 +63,7 @@ app.get("/items", getItems)
     var data = fs.readFileSync('database.json');
     
     //uncomment to see the data being returned 
-    //console.log(JSON.parse(data));
+    console.log(JSON.parse(data));
 
     response.json(JSON.parse(data));
 }
@@ -72,17 +73,25 @@ app.get("/items/search", searchItems)
   function searchItems (request, response) {
     var searchField = request.query.taskname;
     //uncomment to see the searchField passed in
-    //console.log(searchField);
+    console.log(searchField);
 
     var json = JSON.parse(fs.readFileSync("database.json"));
     var returnData = json.filter((jsondata) => jsondata.Task.includes(searchField));
 
     //uncomment to see the todolists found in the backend service//
-    //console.log(returnData);
+    console.log(returnData);
     response.json(returnData);
 }
 
 // AUTH---
+//The auth variable is express middleware that we can add to endpoints to make them authenticated. Before the endpoints are run, the middleware uses the authenticator function to ensure the user has provided authentication. Also note the update to the app.use(cors({})); line. It's important so that our app can send credentials to the backend.
+
+// GET /authenticate uses the auth middleware to verify that the user is authenticated. If the authentication succeeds, it will set a signed cookie on the response that will persist the user's authentication for later requests.
+
+//POST /users will add a new user to the users store and update the users.json file.
+
+//GET /logout will clear the signed user cookie. 
+
 app.get("/authenticate", auth, (req, res) => {
     console.log(`user logging in: ${req.auth.user}`);
     res.cookie('user', req.auth.user, { signed: true });
@@ -100,3 +109,9 @@ app.get("/logout", (req, res) => {
     res.clearCookie('user');
     res.end();
 });
+
+app.post("/items", cookieAuth, addItem);
+
+app.get("/items", cookieAuth, getItems);
+
+app.get("/items/search", cookieAuth, searchItems);
